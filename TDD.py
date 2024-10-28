@@ -41,12 +41,12 @@ class PaymentProcessor:
             	raise PaymentException("Nie podano użytkownika.")
             elif amount is None:
             	raise PaymentException("Nie podano kwoty.")
-            res = self.gateway.charge(userId, amount)
-            if res.success:
-                logging.info(f"Payment successful: {res.transactionId}")
+            result = self.gateway.charge(userId, amount)
+            if result.success:
+                logging.info(f"Payment successful: {result.transactionId}")
             else:
-                logging.error(f"Payment failed: {res.message}")
-            return res
+                logging.error(f"Payment failed: {result.message}")
+            return result
         except (NetworkException, PaymentException) as e:
             logging.error(f"Payment processing error: {str(e)}")
             return TransactionResult(False, "")
@@ -55,12 +55,12 @@ class PaymentProcessor:
         if transactionId is None:
             raise NetworkException("Nie podano numeru transakcji")
         try:
-            res = self.gateway.refund(transactionId)
+            result = self.gateway.refund(transactionId)
             if result.success:
-                logging.info(f"Refund successful: {res.transactionId}")
+                logging.info(f"Refund successful: {result.transactionId}")
             else:
-                logging.error(f"Refund failed: {res.message}")
-            return res
+                logging.error(f"Refund failed: {result.message}")
+            return result
         except (NetworkException, RefundException) as e:
             logging.error(f"Refund processing error: {str(e)}")
             return TransactionResult(False, "")
