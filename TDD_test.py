@@ -111,6 +111,23 @@ class TestPaymentProcessor(unittest.TestCase):
         self.assertTrue(result.success)
         self.gateway_mock.refund.assert_called_once_with("555")
         
+    def test_refund_payment_failure_due_to_nonexistent_transaction(self):
+        self.gateway_mock.refund.return_value = TransactionResult(False, "153", "Transaction not found.")
+        result = self.processor.refundPayment("153")
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Transaction not found.")
+
+    def test_get_payment_status_success(self):
+        self.gateway_mock.get_status.return_value = TransactionStatus.COMPLETED
+        status = self.processor.getPaymentStatus("120")
+        self.assertEqual(status, TransactionStatus.COMPLETED)
+        self.gateway_mock.get_status.assert_called_once_with("120")
+
+    def test_get_payment_status_network_exception(self):
+        self.gateway_mock.get_status.side_effect = NetworkException("Network error.")
+        status = self.processor.getPaymentStatus("1")
+        self.assertEqual(status, TransactionStatus.FAILED)
+
 
 if __name__ == "__main__":
     unittest.main()
