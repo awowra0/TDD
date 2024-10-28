@@ -41,12 +41,12 @@ class PaymentProcessor:
             	raise PaymentException("Nie podano użytkownika.")
             elif amount is None:
             	raise PaymentException("Nie podano kwoty.")
-            res = self.gateway.charge(userId, amount)
-            if res.success:
-                logging.info(f"Payment successful: {res.transactionId}")
+            result = self.gateway.charge(userId, amount)
+            if result.success:
+                logging.info(f"Payment successful: {result.transactionId}")
             else:
-                logging.error(f"Payment failed: {res.message}")
-            return res
+                logging.error(f"Payment failed: {result.message}")
+            return result
         except (NetworkException, PaymentException) as e:
             logging.error(f"Payment processing error: {str(e)}")
             return TransactionResult(False, "")
@@ -55,12 +55,12 @@ class PaymentProcessor:
         if transactionId is None:
             raise NetworkException("Nie podano numeru transakcji")
         try:
-            res = self.gateway.refund(transactionId)
+            result = self.gateway.refund(transactionId)
             if result.success:
-                logging.info(f"Refund successful: {res.transactionId}")
+                logging.info(f"Refund successful: {result.transactionId}")
             else:
-                logging.error(f"Refund failed: {res.message}")
-            return res
+                logging.error(f"Refund failed: {result.message}")
+            return result
         except (NetworkException, RefundException) as e:
             logging.error(f"Refund processing error: {str(e)}")
             return TransactionResult(False, "")
@@ -97,6 +97,19 @@ class TestPaymentProcessor(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.transactionId, "123")
         self.gateway_mock.charge.assert_called_once_with("user1", 100.0)
+        
+    def test_process_payment_failure_no_funds(self):
+        self.gateway_mock.charge.return_value = TransactionResult(False, "124", "Insufficient funds.")
+        result = self.processor.processPayment("user1024", 191.0)
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Insufficient funds.")
+        
+        
+    def test_refund_payment_success(self):
+        self.gateway_mock.refund.return_value = TransactionResult(True, "555", "Refunded successfully.")
+        result = self.processor.refundPayment("555")
+        self.assertTrue(result.success)
+        self.gateway_mock.refund.assert_called_once_with("555")
         
 
 if __name__ == "__main__":
