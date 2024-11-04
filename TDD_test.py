@@ -4,18 +4,21 @@ from enum import Enum
 import logging
 
 
-class TransactionResult:
-    def __init__(self, success: bool, transactionId: str, message: str = ""):
-        self.success = success
-        self.transactionId = transactionId
-        self.message = message
- 
-   
 class TransactionStatus(Enum):
     PENDING = "PENDING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
 
+
+class TransactionResult:
+    def __init__(self, success: bool, transactionId: str, message: str = "", status: TransactionStatus = "FAILED"):
+        self.success = success
+        self.transactionId = transactionId
+        self.message = message
+ 
+   
+#class PaymentGatewayError(Enum):
+#    NetworkException = "NetworkException"
 
 #Klasa interfejs
 class PaymentGateway:
@@ -29,18 +32,26 @@ class PaymentGateway:
         pass
 
 
+class TestPaymentGateway(PaymentGateway):
+    def charge(self, userId: str, amount: float) -> TransactionResult:
+        if amount < 0:
+            raise PaymentException
+        if userId is None:
+            raise NetworkException
+        return TransactionResult(True, 100, "Charged successfully.", TransactionStatus.COMPLETED)
+        
+    def refund(self, transactionId: str) -> TransactionResult:
+        return TransactionResult(True, 200, "Refunded successfully.", TransactionStatus.COMPLETED)
+    	
+    def getStatus(self, transactionId: str) -> TransactionStatus:
+        return TransactionStatus.COMPLETED
+
 class PaymentProcessor:
     def __init__(self, gateway: PaymentGateway):
         self.gateway = gateway
     
     def processPayment(self, userId: str, amount: float) -> TransactionResult:
         try:
-            if amount < 0:
-                raise PaymentException("Podano ujemną kwotę.")
-            elif userId is None:
-            	raise PaymentException("Nie podano użytkownika.")
-            elif amount is None:
-            	raise PaymentException("Nie podano kwoty.")
             result = self.gateway.charge(userId, amount)
             if result.success:
                 logging.info(f"Payment successful: {result.transactionId}")
@@ -52,8 +63,6 @@ class PaymentProcessor:
             return TransactionResult(False, "")
     
     def refundPayment(self, transactionId: str) -> TransactionResult:
-        if transactionId is None:
-            raise NetworkException("Nie podano numeru transakcji")
         try:
             result = self.gateway.refund(transactionId)
             if result.success:
@@ -66,8 +75,6 @@ class PaymentProcessor:
             return TransactionResult(False, "")
     	
     def getPaymentStatus(self, transactionId: str) -> TransactionStatus:
-        if not transactionId:
-            raise NetworkException("Nie podano numeru transakcji")
         try:
             return self.gateway.get_status(transactionId)
         except NetworkException as e:
@@ -84,7 +91,10 @@ class PaymentException(Exception):
 class RefundException(Exception):
     pass 
     
-    
+
+
+
+   
 class TestPaymentProcessor(unittest.TestCase):
 
     def setUp(self):
