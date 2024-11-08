@@ -69,19 +69,19 @@ class PaymentProcessor:
         try:
             result = self.gateway.refund(transactionId)
             if result.success:
-                logging.info(f"Refund successful: {result.transactionId}")
+                self.logger.loginfo(f"Refund successful: {result.transactionId}")
             else:
-                logging.error(f"Refund failed: {result.message}")
+                self.logger.logerror(f"Refund failed: {result.message}")
             return result
         except (NetworkException, RefundException) as e:
-            logging.error(f"Refund processing error: {str(e)}")
+            self.logger.logerror(f"Refund processing error: {str(e)}")
             return TransactionResult(False, "")
     	
     def getPaymentStatus(self, transactionId: str) -> TransactionStatus:
         try:
-            return self.gateway.get_status(transactionId)
+            return self.gateway.getStatus(transactionId)
         except NetworkException as e:
-            logging.error(f"Error getting payment status: {str(e)}")
+            self.logger.logerror(f"Error getting payment status: {str(e)}")
             return TransactionStatus.FAILED
         
 
@@ -108,9 +108,19 @@ class MockPaymentGateway(PaymentGateway):
         return TransactionResult(True, 100, "Charged successfully.", TransactionStatus.COMPLETED)
         
     def refund(self, transactionId: str) -> TransactionResult:
+        if transactionId is None:
+            raise RefundException("Transaction not found.")
+        if transactionId == "987":
+            raise NetworkException("Network refund failed.")
         return TransactionResult(True, 200, "Refunded successfully.", TransactionStatus.COMPLETED)
     	
     def getStatus(self, transactionId: str) -> TransactionStatus:
+        if transactionId is None:
+            raise NetworkException("No transaction found.")
+        if transactionId == "123":
+            raise NetworkException("Network status failed.")
+        if transactionId == "1":
+            return TransactionStatus.PENDING
         return TransactionStatus.COMPLETED
 
 
@@ -174,11 +184,82 @@ class TDDTests:
         #Then
         assert(want==got)
         
-    def 
- 
- 
+    def winRefund(self):
+        self.mock = MockPaymentGateway()
+        self.sut = PaymentProcessor(self.mock)
+        #Given
+        want = TransactionResult(True, "", "", TransactionStatus.COMPLETED)
+        #When
+        got = self.sut.refundPayment("33")
+        #Then
+        assert(want.success == got.success)
+        
+    def failRefundNone(self):
+        self.mock = MockPaymentGateway()
+        self.sut = PaymentProcessor(self.mock)
+        #Given
+        want = "Refund processing error: Transaction not found."
+        #When
+        self.sut.refundPayment(None)
+        got = self.sut.logger.errors[-1]
+        #Then
+        assert(want==got)
+        
+    def failRefundNet(self):
+        self.mock = MockPaymentGateway()
+        self.sut = PaymentProcessor(self.mock)
+        #Given
+        want = "Refund processing error: Network refund failed."
+        #When
+        self.sut.refundPayment("987")
+        got = self.sut.logger.errors[-1]
+        #Then
+        assert(want==got)
+        
+    def winStatusCOM(self):
+        #Given
+        want = TransactionStatus.COMPLETED
+        #When
+        got = self.sut.getPaymentStatus("25")
+        #Then
+        assert(want == got)
+        
+    def winStatusPEN(self):
+        #Given
+        want = TransactionStatus.PENDING
+        #When
+        got = self.sut.getPaymentStatus("1")
+        #Then
+        assert(want == got)
+
+    def failStatusNone(self):
+        #Given
+        want = "Error getting payment status: No transaction found."
+        #When
+        self.sut.getPaymentStatus(None)
+        got = self.sut.logger.errors[-1]
+        #Then
+        assert(want == got)
+        
+    def failStatusNet(self):
+        #Given
+        want = "Error getting payment status: Network status failed."
+        #When
+        self.sut.getPaymentStatus("123")
+        got = self.sut.logger.errors[-1]
+        #Then
+        assert(want == got)
+
+
 a = TDDTests()
 a.winProcess()
 a.failProcessNeg()
 a.failProcessNet()
 a.failProcessCash()
+a.winRefund()
+a.failRefundNone()
+a.failRefundNet()
+a.winStatusCOM()
+a.winStatusPEN()
+a.failStatusNone()
+a.failStatusNet()
