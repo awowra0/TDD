@@ -142,8 +142,6 @@ class TDDTests:
         self.sut = PaymentProcessor(self.mock)
         
     def winProcess(self):
-        self.mock = MockPaymentGateway()
-        self.sut = PaymentProcessor(self.mock)
         #Given
         want = TransactionResult(True, "", "", TransactionStatus.COMPLETED)
         #When
@@ -152,8 +150,6 @@ class TDDTests:
         assert(want.success==got.success)
     
     def failProcessNeg(self):
-        self.mock = MockPaymentGateway()
-        self.sut = PaymentProcessor(self.mock)
         #Given
         want = "Payment processing error: Negative payment."
         #When
@@ -163,8 +159,6 @@ class TDDTests:
         assert(want==got)
         
     def failProcessNet(self):
-        self.mock = MockPaymentGateway()
-        self.sut = PaymentProcessor(self.mock)
         #Given
         want = "Payment processing error: Network payment failed."
         #When
@@ -174,8 +168,6 @@ class TDDTests:
         assert(want==got)
         
     def failProcessCash(self):
-        self.mock = MockPaymentGateway()
-        self.sut = PaymentProcessor(self.mock)
         #Given
         want = "Payment processing error: No cash."
         #When
@@ -185,8 +177,6 @@ class TDDTests:
         assert(want==got)
         
     def winRefund(self):
-        self.mock = MockPaymentGateway()
-        self.sut = PaymentProcessor(self.mock)
         #Given
         want = TransactionResult(True, "", "", TransactionStatus.COMPLETED)
         #When
@@ -195,8 +185,6 @@ class TDDTests:
         assert(want.success == got.success)
         
     def failRefundNone(self):
-        self.mock = MockPaymentGateway()
-        self.sut = PaymentProcessor(self.mock)
         #Given
         want = "Refund processing error: Transaction not found."
         #When
@@ -206,8 +194,6 @@ class TDDTests:
         assert(want==got)
         
     def failRefundNet(self):
-        self.mock = MockPaymentGateway()
-        self.sut = PaymentProcessor(self.mock)
         #Given
         want = "Refund processing error: Network refund failed."
         #When
