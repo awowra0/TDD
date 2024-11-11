@@ -121,6 +121,21 @@ class TDDTests:
         self.mock = MockPaymentGateway()
         self.sut = PaymentProcessor(self.mock)
 
+    def runTests(self):
+        print("Tests started")
+        self.winProcess()
+        self.failProcessNeg()
+        self.failProcessNet()
+        self.failProcessCash()
+        self.winRefund()
+        self.failRefundNone()
+        self.failRefundNet()
+        self.winStatusCOM()
+        self.winStatusPEN()
+        self.failStatusNone()
+        self.failStatusNet()
+        print("Tests finished")
+
     def winProcess(self):
         # Given
         want = TransactionResult(True, "", "", TransactionStatus.COMPLETED)
@@ -217,15 +232,6 @@ class TDDTests:
         assert (want == got)
 
 
-a = TDDTests()
-a.winProcess()
-a.failProcessNeg()
-a.failProcessNet()
-a.failProcessCash()
-a.winRefund()
-a.failRefundNone()
-a.failRefundNet()
-a.winStatusCOM()
-a.winStatusPEN()
-a.failStatusNone()
-a.failStatusNet()
+if __name__ == "__main__":
+    a = TDDTests()
+    a.runTests()
