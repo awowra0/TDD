@@ -27,7 +27,7 @@ class RefundException(Exception):
     pass
 
 
-# Klasa interfejs
+# Interface class
 class PaymentGateway:
     def charge(self, userId: str, amount: float) -> TransactionResult:
         pass
@@ -76,7 +76,7 @@ class PaymentProcessor:
             return TransactionStatus.FAILED
 
 
-# Interfejs do testów
+# Interface used for tests
 class MockPaymentGateway(PaymentGateway):
     def charge(self, userId: str, amount: float) -> TransactionResult:
         if amount < 0:
@@ -104,6 +104,7 @@ class MockPaymentGateway(PaymentGateway):
         return TransactionStatus.COMPLETED
 
 
+#Class collecting all logs
 class Logger:
     def __init__(self):
         self.infos = []
@@ -116,6 +117,7 @@ class Logger:
         self.errors.append(log)
 
 
+# Class running tests
 class TDDTests:
     def __init__(self):
         self.mock = MockPaymentGateway()
