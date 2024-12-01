@@ -8,7 +8,12 @@ class TransactionStatus(Enum):
 
 
 class TransactionResult:
-    def __init__(self, success: bool, transactionId: str, message: str = "", status: TransactionStatus = TransactionStatus.PENDING):
+    def __init__(self, 
+        success: bool,
+        transactionId: str,
+        message: str = "",
+        status: TransactionStatus = TransactionStatus.PENDING
+    ):
         self.success = success
         self.transactionId = transactionId
         self.message = message
@@ -42,13 +47,13 @@ class Logger:
 # Klasa interfejs
 class PaymentGateway:
     def charge(self, userId: str, amount: float) -> TransactionResult:
-        pass
+        return TransactionResults(False, "", "", TransactionStatus.FAILED)
 
     def refund(self, transactionId: str) -> TransactionResult:
-        pass
+        return TransactionResults(False, "", "", TransactionStatus.FAILED)
 
     def getStatus(self, transactionId: str) -> TransactionStatus:
-        pass
+        return TransactionResults(False, "", "", TransactionStatus.FAILED)
 
 
 class PaymentProcessor:

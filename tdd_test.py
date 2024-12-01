@@ -2,12 +2,12 @@
 Test file.
 """
 from tdd import (
-    PaymentProcessor,
-    PaymentGateway,
-    TransactionResult,
-    PaymentException,
     NetworkException,
+    PaymentException,
+    PaymentGateway,
+    PaymentProcessor,
     RefundException,
+    TransactionResult,
     TransactionStatus,
 )
 
@@ -18,7 +18,7 @@ class MockPaymentGateway(PaymentGateway):
     Mock version for class PaymentGateway.
     """
 
-    def charge(self,userId: str, amount: float) -> TransactionResult:
+    def charge(self, userId: str, amount: float) -> TransactionResult:
         """
         Charge money.
         """
@@ -28,7 +28,9 @@ class MockPaymentGateway(PaymentGateway):
             raise PaymentException("No cash.")
         if not isinstance(userId, str):
             raise NetworkException("Network payment failed.")
-        return TransactionResult(True, "100", "Charged successfully.", TransactionStatus.COMPLETED)
+        return TransactionResult(
+            True, "100", "Charged successfully.", TransactionStatus.COMPLETED
+        )
 
     def refund(self, transactionId: str) -> TransactionResult:
         """
@@ -38,7 +40,9 @@ class MockPaymentGateway(PaymentGateway):
             raise RefundException("Transaction not found.")
         if transactionId == "987":
             raise NetworkException("Network refund failed.")
-        return TransactionResult(True, "200", "Refunded successfully.", TransactionStatus.COMPLETED)
+        return TransactionResult(
+            True, "200", "Refunded successfully.", TransactionStatus.COMPLETED
+        )
 
     def getStatus(self, transactionId: str) -> TransactionStatus:
         """
