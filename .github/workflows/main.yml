@@ -29,6 +29,11 @@ jobs:
         pytest -vv --cov=main TDD_test.py
 
   lint:
+    permissions:
+      # To write linting fixes
+      contents: write
+      # To write Super-linter status checks
+      statuses: write
     needs: test
     runs-on: ubuntu-20.04
     steps:
@@ -48,5 +53,11 @@ jobs:
           FIX_PYTHON_RUFF: true
           DEFAULT_BRANCH: "main"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Lint Commit
+        uses: git-auto-commit-action@v5
+        with:
+          commit_message: "chore: fix linting issues"
+          commit_user_name: super-linter
+        
 
       
