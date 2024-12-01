@@ -48,13 +48,13 @@ class Logger:
 # Klasa interfejs
 class PaymentGateway:
     def charge(self, userId: str, amount: float) -> TransactionResult:
-        return TransactionResults(False, "", TransactionStatus.FAILED)
+        return TransactionResult(False, "", TransactionStatus.FAILED)
 
     def refund(self, transactionId: str) -> TransactionResult:
-        return TransactionResults(False, "", TransactionStatus.FAILED)
+        return TransactionResult(False, "", TransactionStatus.FAILED)
 
     def getStatus(self, transactionId: str) -> TransactionStatus:
-        return TransactionResults(False, "", TransactionStatus.FAILED)
+        return TransactionResult(False, "", TransactionStatus.FAILED)
 
 
 class PaymentProcessor:
