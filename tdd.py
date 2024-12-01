@@ -8,7 +8,7 @@ class TransactionStatus(Enum):
 
 
 class TransactionResult:
-    def __init__(self, success: bool, transactionId: str, message: str = "", status: TransactionStatus = "PENDING"):
+    def __init__(self, success: bool, transactionId: str, message: str = "", status: TransactionStatus = TransactionStatus.PENDING):
         self.success = success
         self.transactionId = transactionId
         self.message = message
@@ -66,7 +66,7 @@ class PaymentProcessor:
             return result
         except (NetworkException, PaymentException) as e:
             self.logger.logerror(f"Payment processing error: {str(e)}")
-            return TransactionResult(False, "", status="FAILED")
+            return TransactionResult(False, "", status=TransactionStatus.FAILED)
 
     def refundPayment(self, transactionId: str) -> TransactionResult:
         try:
@@ -78,7 +78,7 @@ class PaymentProcessor:
             return result
         except (NetworkException, RefundException) as e:
             self.logger.logerror(f"Refund processing error: {str(e)}")
-            return TransactionResult(False, "", status="FAILED")
+            return TransactionResult(False, "", status=TransactionStatus.FAILED)
 
     def getPaymentStatus(self, transactionId: str) -> TransactionStatus:
         try:

@@ -1,25 +1,49 @@
-from TDD import *
+"""
+Test file.
+"""
+from tdd import (
+    PaymentProcessor,
+    PaymentGateway,
+    TransactionResult,
+    PaymentException,
+    NetworkException,
+    RefundException,
+    TransactionStatus,
+)
 
 
 # Interface used for tests
 class MockPaymentGateway(PaymentGateway):
+    """
+    Mock version for class PaymentGateway.
+    """
+
     def charge(self,userId: str, amount: float) -> TransactionResult:
+        """
+        Charge money.
+        """
         if amount < 0:
             raise PaymentException("Negative payment.")
         if amount > 20000:
             raise PaymentException("No cash.")
-        if userId is None:
+        if not isinstance(userId, str):
             raise NetworkException("Network payment failed.")
-        return TransactionResult(True, 100, "Charged successfully.", TransactionStatus.COMPLETED)
+        return TransactionResult(True, "100", "Charged successfully.", TransactionStatus.COMPLETED)
 
     def refund(self, transactionId: str) -> TransactionResult:
+        """
+        Refund money.
+        """
         if transactionId is None:
             raise RefundException("Transaction not found.")
         if transactionId == "987":
             raise NetworkException("Network refund failed.")
-        return TransactionResult(True, 200, "Refunded successfully.", TransactionStatus.COMPLETED)
+        return TransactionResult(True, "200", "Refunded successfully.", TransactionStatus.COMPLETED)
 
     def getStatus(self, transactionId: str) -> TransactionStatus:
+        """
+        Get transaction status.
+        """
         if transactionId is None:
             raise NetworkException("No transaction found.")
         if transactionId == "123":
@@ -35,15 +59,21 @@ sut = PaymentProcessor(mock)
 
 # Class running tests
 class Tester:
-    def test_winProcess(self):
+    """
+    Class running tests.
+    """
+
+    def test_win_process(self):
+        "Do process"
         # Given
         want = TransactionResult(True, "", "", TransactionStatus.COMPLETED)
         # When
         got = sut.processPayment("123", 40)
         # Then
-        assert (want.success == got.success)
+        assert want.success == got.success
 
-    def test_failProcessNeg(self):
+    def test_fail_process_neg(self):
+        "Fail process"
         # Given
         want = "Payment processing error: Negative payment."
         # When
@@ -52,7 +82,8 @@ class Tester:
         # Then
         assert want == got
 
-    def test_failProcessNet(self):
+    def test_fail_process_net(self):
+        "Fail process"
         # Given
         want = "Payment processing error: Network payment failed."
         # When
@@ -61,7 +92,8 @@ class Tester:
         # Then
         assert want == got
 
-    def test_failProcessCash(self):
+    def test_fail_process_cash(self):
+        "Fail process"
         # Given
         want = "Payment processing error: No cash."
         # When
@@ -70,15 +102,17 @@ class Tester:
         # Then
         assert want == got
 
-    def test_winRefund(self):
+    def test_win_refund(self):
+        "Do refund"
         # Given
         want = TransactionResult(True, "", "", TransactionStatus.COMPLETED)
         # When
         got = sut.refundPayment("33")
         # Then
-        assert (want.success == got.success)
+        assert want.success == got.success
 
-    def test_failRefundNone(self):
+    def test_fail_refund_none(self):
+        "Fail refund"
         # Given
         want = "Refund processing error: Transaction not found."
         # When
@@ -87,7 +121,8 @@ class Tester:
         # Then
         assert want == got
 
-    def test_failRefundNet(self):
+    def test_fail_refund_net(self):
+        "Fail refund"
         # Given
         want = "Refund processing error: Network refund failed."
         # When
@@ -96,7 +131,8 @@ class Tester:
         # Then
         assert want == got
 
-    def test_winStatusCOM(self):
+    def test_win_status_com(self):
+        "Do status check"
         # Given
         want = TransactionStatus.COMPLETED
         # When
@@ -104,7 +140,8 @@ class Tester:
         # Then
         assert want == got
 
-    def test_winStatusPEN(self):
+    def test_win_status_pen(self):
+        "Do status check"
         # Given
         want = TransactionStatus.PENDING
         # When
@@ -112,7 +149,8 @@ class Tester:
         # Then
         assert want == got
 
-    def test_failStatusNone(self):
+    def test_fail_status_none(self):
+        "Fail status check"
         # Given
         want = "Error getting payment status: No transaction found."
         # When
@@ -121,7 +159,8 @@ class Tester:
         # Then
         assert want == got
 
-    def test_failStatusNet(self):
+    def test_fail_status_net(self):
+        "Fail status check"
         # Given
         want = "Error getting payment status: Network status failed."
         # When
