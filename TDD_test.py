@@ -3,7 +3,7 @@ from TDD import *
 
 # Interface used for tests
 class MockPaymentGateway(PaymentGateway):
-    def charge(self, userId: str, amount: float) -> TransactionResult:
+    def charge(self,userId:str, amount: float) -> TransactionResult:
         if amount < 0:
             raise PaymentException("Negative payment.")
         if amount > 20000:
