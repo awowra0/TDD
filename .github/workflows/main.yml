@@ -42,6 +42,10 @@ jobs:
         uses: github/super-linter@v4
         env:
           VALIDATE_PYTHON_RUFF: true
+          FIX_PYTHON_BLACK: true
+          FIX_PYTHON_ISORT: true
+          FIX_PYTHON_PYINK: true
+          FIX_PYTHON_RUFF: true
           DEFAULT_BRANCH: "main"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
