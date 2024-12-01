@@ -27,6 +27,18 @@ class RefundException(Exception):
     pass
 
 
+class Logger:
+    def __init__(self):
+        self.infos = []
+        self.errors = []
+
+    def loginfo(self, log):
+        self.infos.append(log)
+
+    def logerror(self, log):
+        self.errors.append(log)
+
+
 # Klasa interfejs
 class PaymentGateway:
     def charge(self, userId: str, amount: float) -> TransactionResult:

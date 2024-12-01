@@ -1,79 +1,4 @@
-from enum import Enum
-
-
-class TransactionStatus(Enum):
-    PENDING = "PENDING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-
-
-class TransactionResult:
-    def __init__(self, success: bool, transactionId: str, message: str = "", status: TransactionStatus = "PENDING"):
-        self.success = success
-        self.transactionId = transactionId
-        self.message = message
-        self.status = status
-
-
-class NetworkException(Exception):
-    pass
-
-
-class PaymentException(Exception):
-    pass
-
-
-class RefundException(Exception):
-    pass
-
-
-# Interface class
-class PaymentGateway:
-    def charge(self, userId: str, amount: float) -> TransactionResult:
-        pass
-
-    def refund(self, transactionId: str) -> TransactionResult:
-        pass
-
-    def getStatus(self, transactionId: str) -> TransactionStatus:
-        pass
-
-
-class PaymentProcessor:
-    def __init__(self, gateway: PaymentGateway):
-        self.gateway = gateway
-        self.logger = Logger()
-
-    def processPayment(self, userId: str, amount: float) -> TransactionResult:
-        try:
-            result = self.gateway.charge(userId, amount)
-            if result.success:
-                self.logger.loginfo(f"Payment successful: {result.transactionId}")
-            else:
-                self.logger.logerror(f"Payment failed: {result.message}")
-            return result
-        except (NetworkException, PaymentException) as e:
-            self.logger.logerror(f"Payment processing error: {str(e)}")
-            return TransactionResult(False, "", status="FAILED")
-
-    def refundPayment(self, transactionId: str) -> TransactionResult:
-        try:
-            result = self.gateway.refund(transactionId)
-            if result.success:
-                self.logger.loginfo(f"Refund successful: {result.transactionId}")
-            else:
-                self.logger.logerror(f"Refund failed: {result.message}")
-            return result
-        except (NetworkException, RefundException) as e:
-            self.logger.logerror(f"Refund processing error: {str(e)}")
-            return TransactionResult(False, "", status="FAILED")
-
-    def getPaymentStatus(self, transactionId: str) -> TransactionStatus:
-        try:
-            return self.gateway.getStatus(transactionId)
-        except NetworkException as e:
-            self.logger.logerror(f"Error getting payment status: {str(e)}")
-            return TransactionStatus.FAILED
+from TDD import *
 
 
 # Interface used for tests
@@ -104,136 +29,103 @@ class MockPaymentGateway(PaymentGateway):
         return TransactionStatus.COMPLETED
 
 
-#Class collecting all logs
-class Logger:
-    def __init__(self):
-        self.infos = []
-        self.errors = []
-
-    def loginfo(self, log):
-        self.infos.append(log)
-
-    def logerror(self, log):
-        self.errors.append(log)
+mock = MockPaymentGateway()
+sut = PaymentProcessor(mock)
 
 
 # Class running tests
-class TDDTests:
-    def __init__(self):
-        self.mock = MockPaymentGateway()
-        self.sut = PaymentProcessor(self.mock)
-
-    def runTests(self):
-        print("Tests started")
-        self.winProcess()
-        self.failProcessNeg()
-        self.failProcessNet()
-        self.failProcessCash()
-        self.winRefund()
-        self.failRefundNone()
-        self.failRefundNet()
-        self.winStatusCOM()
-        self.winStatusPEN()
-        self.failStatusNone()
-        self.failStatusNet()
-        print("Tests finished")
-
-    def winProcess(self):
+class Tester:
+    def test_winProcess(self):
         # Given
         want = TransactionResult(True, "", "", TransactionStatus.COMPLETED)
         # When
-        got = self.sut.processPayment("123", 40)
+        got = sut.processPayment("123", 40)
         # Then
         assert (want.success == got.success)
 
-    def failProcessNeg(self):
+    def test_failProcessNeg(self):
         # Given
         want = "Payment processing error: Negative payment."
         # When
-        self.sut.processPayment("123", -40)
-        got = self.sut.logger.errors[-1]
+        sut.processPayment("123", -40)
+        got = sut.logger.errors[-1]
         # Then
-        assert (want == got)
+        assert want == got
 
-    def failProcessNet(self):
+    def test_failProcessNet(self):
         # Given
         want = "Payment processing error: Network payment failed."
         # When
-        self.sut.processPayment(None, 10)
-        got = self.sut.logger.errors[-1]
+        sut.processPayment(None, 10)
+        got = sut.logger.errors[-1]
         # Then
-        assert (want == got)
+        assert want == got
 
-    def failProcessCash(self):
+    def test_failProcessCash(self):
         # Given
         want = "Payment processing error: No cash."
         # When
-        self.sut.processPayment("123", 99999)
-        got = self.sut.logger.errors[-1]
+        sut.processPayment("123", 99999)
+        got = sut.logger.errors[-1]
         # Then
-        assert (want == got)
+        assert want == got
 
-    def winRefund(self):
+    def test_winRefund(self):
         # Given
         want = TransactionResult(True, "", "", TransactionStatus.COMPLETED)
         # When
-        got = self.sut.refundPayment("33")
+        got = sut.refundPayment("33")
         # Then
         assert (want.success == got.success)
 
-    def failRefundNone(self):
+    def test_failRefundNone(self):
         # Given
         want = "Refund processing error: Transaction not found."
         # When
-        self.sut.refundPayment(None)
-        got = self.sut.logger.errors[-1]
+        sut.refundPayment(None)
+        got = sut.logger.errors[-1]
         # Then
-        assert (want == got)
+        assert want == got
 
-    def failRefundNet(self):
+    def test_failRefundNet(self):
         # Given
         want = "Refund processing error: Network refund failed."
         # When
-        self.sut.refundPayment("987")
-        got = self.sut.logger.errors[-1]
+        sut.refundPayment("987")
+        got = sut.logger.errors[-1]
         # Then
-        assert (want == got)
+        assert want == got
 
-    def winStatusCOM(self):
+    def test_winStatusCOM(self):
         # Given
         want = TransactionStatus.COMPLETED
         # When
-        got = self.sut.getPaymentStatus("25")
+        got = sut.getPaymentStatus("25")
         # Then
-        assert (want == got)
+        assert want == got
 
-    def winStatusPEN(self):
+    def test_winStatusPEN(self):
         # Given
         want = TransactionStatus.PENDING
         # When
-        got = self.sut.getPaymentStatus("1")
+        got = sut.getPaymentStatus("1")
         # Then
-        assert (want == got)
+        assert want == got
 
-    def failStatusNone(self):
+    def test_failStatusNone(self):
         # Given
         want = "Error getting payment status: No transaction found."
         # When
-        self.sut.getPaymentStatus(None)
-        got = self.sut.logger.errors[-1]
+        sut.getPaymentStatus(None)
+        got = sut.logger.errors[-1]
         # Then
-        assert (want == got)
+        assert want == got
 
-    def failStatusNet(self):
+    def test_failStatusNet(self):
         # Given
         want = "Error getting payment status: Network status failed."
         # When
-        self.sut.getPaymentStatus("123")
-        got = self.sut.logger.errors[-1]
+        sut.getPaymentStatus("123")
+        got = sut.logger.errors[-1]
         # Then
-        assert (want == got)
-
-
-if __name__ == "__main__":
-    a = TDDTests()
-    a.runTests()
+        assert want == got
